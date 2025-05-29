@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Opper - မြန်မာ Cryptocurrency Trading Platform</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loading-content">
+            <div class="crypto-logo">
+                <i class="fab fa-bitcoin"></i>
+            </div>
+            <h2>Crypto Opper</h2>
+            <div class="loading-spinner"></div>
+        </div>
+    </div>
+
+    <!-- Login/Register Modal -->
+    <div id="authModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div class="auth-container">
+                <div class="auth-tabs">
+                    <button class="tab-btn active" data-tab="login">ဝင်ရောက်ရန်</button>
+                    <button class="tab-btn" data-tab="register">အကောင့်ဖွင့်ရန်</button>
+                </div>
+                
+                <!-- Login Form -->
+                <div id="loginForm" class="auth-form active">
+                    <h3>အကောင့်ဝင်ရောက်ရန်</h3>
+                    <form id="loginFormSubmit">
+                        <div class="input-group">
+                            <i class="fas fa-envelope"></i>
+                            <input type="email" id="loginEmail" placeholder="Gmail လိပ်စာ" required>
+                        </div>
+                        <div class="input-group">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="loginPassword" placeholder="လျှို့ဝှက်နံပါတ်" required>
+                        </div>
+                        <button type="submit" class="auth-btn">ဝင်ရောက်ရန်</button>
+                    </form>
+                </div>
+
+                <!-- Register Form -->
+                <div id="registerForm" class="auth-form">
+                    <h3>အကောင့်အသစ်ဖွင့်ရန်</h3>
+                    <form id="registerFormSubmit">
+                        <div class="input-group">
+                            <i class="fas fa-user"></i>
+                            <input type="text" id="registerName" placeholder="အမည်အပြည့်အစုံ" required>
+                        </div>
+                        <div class="input-group">
+                            <i class="fas fa-envelope"></i>
+                            <input type="email" id="registerEmail" placeholder="Gmail လိပ်စာ" required>
+                        </div>
+                        <div class="input-group">
+                            <i class="fas fa-phone"></i>
+                            <input type="tel" id="registerPhone" placeholder="ဖုန်းနံပါတ်" required>
+                        </div>
+                        <div class="input-group">
+                            <i class="fas fa-globe"></i>
+                            <select id="registerCountry" required>
+                                <option value="">နိုင်ငံရွေးချယ်ပါ</option>
+                                <option value="MM">မြန်မာ</option>
+                                <option value="TH">ထိုင်း</option>
+                                <option value="SG">စင်္ကာပူ</option>
+                                <option value="MY">မလေးရှား</option>
+                                <option value="US">အမေရိကန်</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="registerPassword" placeholder="လျှို့ဝှက်နံပါတ်" required>
+                        </div>
+                        <div class="input-group">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="confirmPassword" placeholder="လျှို့ဝှက်နံပါတ်အတည်ပြုရန်" required>
+                        </div>
+                        <button type="submit" class="auth-btn">အကောင့်ဖွင့်ရန်</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- KYC Modal -->
+    <div id="kycModal" class="modal">
+        <div class="modal-content">
+            <div class="kyc-container">
+                <h3>KYC အတည်ပြုခြင်း</h3>
+                <p>အကောင့်အသုံးပြုရန် KYC အတည်ပြုခြင်းလုပ်ငန်းစဉ်ကို ပြီးမြောက်ရပါမည်။</p>
+                <form id="kycForm">
+                    <div class="input-group">
+                        <label>မှတ်ပုံတင်/နိုင်ငံကူးလက်မှတ် ဓာတ်ပုံ</label>
+                        <input type="file" id="kycDocument" accept="image/*" required>
+                    </div>
+                    <button type="submit" class="auth-btn">KYC တင်သွင်းရန်</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div id="mainApp" class="main-app" style="display: none;">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <div class="logo">
+                    <i class="fab fa-bitcoin"></i>
+                    <span>Crypto Opper</span>
+                </div>
+                <nav class="nav-menu">
+                    <a href="#" class="nav-item active" data-section="trading">ကုန်သွယ်မှု</a>
+                    <a href="#" class="nav-item" data-section="p2p">P2P</a>
+                    <a href="#" class="nav-item" data-section="wallet">ပိုက်ဆံအိတ်</a>
+                    <a href="#" class="nav-item" data-section="history">မှတ်တမ်း</a>
+                </nav>
+            </div>
+            <div class="header-right">
+                <div class="user-balance">
+                    <span>လက်ကျန်ငွေ: $<span id="totalBalance">0.00</span></span>
+                </div>
+                <div class="user-menu">
+                    <button class="user-btn" id="userMenuBtn">
+                        <i class="fas fa-user"></i>
+                        <span id="userName">User</span>
+                    </button>
+                    <div class="user-dropdown" id="userDropdown">
+                        <a href="#" id="profileBtn">ပရိုဖိုင်</a>
+                        <a href="#" id="logoutBtn">ထွက်ရန်</a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Trading Section -->
+        <section id="tradingSection" class="section active">
+            <div class="trading-container">
+                <!-- Market Overview -->
+                <div class="market-overview">
+                    <h3>စျေးကွက်အခြေအနေ</h3>
+                    <div class="market-grid" id="marketGrid">
+                        <!-- Market data will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Trading Interface -->
+                <div class="trading-interface">
+                    <div class="trading-pair">
+                        <select id="tradingPair">
+                            <option value="BTC/USD">BTC/USD</option>
+                            <option value="ETH/USD">ETH/USD</option>
+                            <option value="BNB/USD">BNB/USD</option>
+                        </select>
+                    </div>
+                    
+                    <div class="order-forms">
+                        <div class="buy-form">
+                            <h4>ဝယ်ယူရန်</h4>
+                            <div class="input-group">
+                                <label>စျေးနှုန်း (USD)</label>
+                                <input type="number" id="buyPrice" step="0.01">
+                            </div>
+                            <div class="input-group">
+                                <label>ပမာဏ</label>
+                                <input type="number" id="buyAmount" step="0.00000001">
+                            </div>
+                            <div class="input-group">
+                                <label>စုစုပေါင်း (USD)</label>
+                                <input type="number" id="buyTotal" readonly>
+                            </div>
+                            <button class="buy-btn">ဝယ်ယူရန်</button>
+                        </div>
+
+                        <div class="sell-form">
+                            <h4>ရောင်းချရန်</h4>
+                            <div class="input-group">
+                                <label>စျေးနှုန်း (USD)</label>
+                                <input type="number" id="sellPrice" step="0.01">
+                            </div>
+                            <div class="input-group">
+                                <label>ပမာဏ</label>
+                                <input type="number" id="sellAmount" step="0.00000001">
+                            </div>
+                            <div class="input-group">
+                                <label>စုစုပေါင်း (USD)</label>
+                                <input type="number" id="sellTotal" readonly>
+                            </div>
+                            <button class="sell-btn">ရောင်းချရန်</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- P2P Section -->
+        <section id="p2pSection" class="section">
+            <div class="p2p-container">
+                <div class="p2p-header">
+                    <h3>P2P ကုန်သွယ်မှု</h3>
+                    <button class="create-order-btn" id="createOrderBtn">အော်ဒါအသစ်ဖန်တီးရန်</button>
+                </div>
+                
+                <div class="p2p-filters">
+                    <select id="p2pCrypto">
+                        <option value="BTC">Bitcoin (BTC)</option>
+                        <option value="ETH">Ethereum (ETH)</option>
+                        <option value="BNB">Binance Coin (BNB)</option>
+                    </select>
+                    <select id="p2pFiat">
+                        <option value="USD">US Dollar</option>
+                        <option value="MMK">Myanmar Kyat</option>
+                        <option value="THB">Thai Baht</option>
+                    </select>
+                    <select id="p2pType">
+                        <option value="buy">ဝယ်ယူရန်</option>
+                        <option value="sell">ရောင်းချရန်</option>
+                    </select>
+                </div>
+
+                <div class="p2p-orders" id="p2pOrders">
+                    <!-- P2P orders will be populated here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Wallet Section -->
+        <section id="walletSection" class="section">
+            <div class="wallet-container">
+                <div class="wallet-header">
+                    <h3>ပိုက်ဆံအိတ်</h3>
+                    <div class="wallet-actions">
+                        <button class="deposit-btn" id="depositBtn">ငွေသွင်းရန်</button>
+                        <button class="withdraw-btn" id="withdrawBtn">ငွေထုတ်ရန်</button>
+                    </div>
+                </div>
+
+                <div class="wallet-balances" id="walletBalances">
+                    <!-- Wallet balances will be populated here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- History Section -->
+        <section id="historySection" class="section">
+            <div class="history-container">
+                <h3>ငွေလွှဲမှတ်တမ်း</h3>
+                <div class="history-filters">
+                    <select id="historyType">
+                        <option value="all">အားလုံး</option>
+                        <option value="deposit">ငွေသွင်း</option>
+                        <option value="withdrawal">ငွေထုတ်</option>
+                        <option value="transfer">ငွေလွှဲ</option>
+                        <option value="trade">ကုန်သွယ်မှု</option>
+                    </select>
+                    <input type="date" id="historyDate">
+                </div>
+                <div class="history-list" id="historyList">
+                    <!-- Transaction history will be populated here -->
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Transfer Modal -->
+    <div id="transferModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div class="transfer-container">
+                <h3>ငွေလွှဲရန်</h3>
+                <form id="transferForm">
+                    <div class="input-group">
+                        <label>လက်ခံမည့်လိပ်စာ</label>
+                        <input type="text" id="transferAddress" placeholder="Wallet Address" required>
+                    </div>
+                    <div class="input-group">
+                        <label>ငွေကြေးအမျိုးအစား</label>
+                        <select id="transferCurrency" required>
+                            <option value="BTC">Bitcoin (BTC)</option>
+                            <option value="ETH">Ethereum (ETH)</option>
+                            <option value="BNB">Binance Coin (BNB)</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>ပမာណ</label>
+                        <input type="number" id="transferAmount" step="0.00000001" required>
+                    </div>
+                    <div class="transfer-fee">
+                        <span>ကြေးကုန်: <span id="transferFee">0.001 BTC</span></span>
+                    </div>
+                    <button type="submit" class="transfer-btn">ငွေလွှဲရန်</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
