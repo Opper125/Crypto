@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Opper - Admin Dashboard</title>
+    <link rel="stylesheet" href="admin-styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Admin Login Modal -->
+    <div id="adminLoginModal" class="modal">
+        <div class="modal-content">
+            <div class="admin-login-container">
+                <div class="admin-logo">
+                    <i class="fas fa-shield-alt"></i>
+                    <h2>Admin Dashboard</h2>
+                </div>
+                <form id="adminLoginForm">
+                    <div class="input-group">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" id="adminEmail" placeholder="Admin Email" required>
+                    </div>
+                    <div class="input-group">
+                        <i class="fas fa-key"></i>
+                        <input type="password" id="adminPin" placeholder="PIN" required>
+                    </div>
+                    <button type="submit" class="admin-login-btn">ဝင်ရောက်ရန်</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div id="adminDashboard" class="admin-dashboard" style="display: none;">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <div class="admin-logo">
+                <i class="fas fa-shield-alt"></i>
+                <span>Admin Panel</span>
+            </div>
+            <nav class="admin-nav">
+                <a href="#" class="nav-link active" data-section="overview">
+                    <i class="fas fa-chart-line"></i>
+                    <span>ခြုံငုံသုံးသပ်ချက်</span>
+                </a>
+                <a href="#" class="nav-link" data-section="users">
+                    <i class="fas fa-users"></i>
+                    <span>အသုံးပြုသူများ</span>
+                </a>
+                <a href="#" class="nav-link" data-section="transactions">
+                    <i class="fas fa-exchange-alt"></i>
+                    <span>ငွေလွှဲမှတ်တမ်းများ</span>
+                </a>
+                <a href="#" class="nav-link" data-section="kyc">
+                    <i class="fas fa-id-card"></i>
+                    <span>KYC အတည်ပြုခြင်း</span>
+                </a>
+                <a href="#" class="nav-link" data-section="market">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>စျေးကွက်ထိန်းချုပ်မှု</span>
+                </a>
+                <a href="#" class="nav-link" data-section="logs">
+                    <i class="fas fa-file-alt"></i>
+                    <span>လုပ်ဆောင်ချက်မှတ်တမ်း</span>
+                </a>
+            </nav>
+            <div class="admin-logout">
+                <button id="adminLogoutBtn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>ထွက်ရန်</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <!-- Header -->
+            <header class="admin-header">
+                <div class="header-left">
+                    <h1 id="sectionTitle">ခြုံငုံသုံးသပ်ချက်</h1>
+                </div>
+                <div class="header-right">
+                    <div class="real-time-indicator">
+                        <div class="status-dot"></div>
+                        <span>Real-time Active</span>
+                    </div>
+                    <div class="admin-info">
+                        <span>Admin: crakb68@gmail.com</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Overview Section -->
+            <section id="overviewSection" class="admin-section active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="totalUsers">0</h3>
+                            <p>စုစုပေါင်း အသုံးပြုသူ</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="totalVolume">$0</h3>
+                            <p>စုစုပေါင်း ကုန်သွယ်မှုပမာဏ</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-exchange-alt"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="totalTransactions">0</h3>
+                            <p>စုစုပေါင်း ငွေလွှဲမှု</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="pendingKYC">0</h3>
+                            <p>စောင့်ဆိုင်းနေသော KYC</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="charts-grid">
+                    <div class="chart-container">
+                        <h3>နေ့စဥ် ကုန်သွယ်မှုပမာဏ</h3>
+                        <canvas id="dailyVolumeChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>အသုံးပြုသူ တိုးတက်မှု</h3>
+                        <canvas id="userGrowthChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="recent-activities">
+                    <h3>လတ်တလော လုပ်ဆောင်ချက်များ</h3>
+                    <div id="recentActivities" class="activities-list">
+                        <!-- Recent activities will be populated here -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Users Section -->
+            <section id="usersSection" class="admin-section">
+                <div class="section-header">
+                    <h2>အသုံးပြုသူများ စီမံခန့်ခွဲမှု</h2>
+                    <div class="search-bar">
+                        <input type="text" id="userSearch" placeholder="အသုံးပြုသူ ရှာဖွေရန်...">
+                        <i class="fas fa-search"></i>
+                    </div>
+                </div>
+                
+                <div class="users-table-container">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>အမည်</th>
+                                <th>Email</th>
+                                <th>နိုင်ငံ</th>
+                                <th>KYC အခြေအနေ</th>
+                                <th>လက်ကျန်ငွေ (USD)</th>
+                                <th>ဖွင့်သည့်ရက်</th>
+                                <th>လုပ်ဆောင်ချက်များ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody">
+                            <!-- Users data will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Transactions Section -->
+            <section id="transactionsSection" class="admin-section">
+                <div class="section-header">
+                    <h2>ငွေလွှဲမှတ်တမ်းများ</h2>
+                    <div class="filters">
+                        <select id="transactionTypeFilter">
+                            <option value="">အားလုံး</option>
+                            <option value="deposit">ငွေသွင်း</option>
+                            <option value="withdrawal">ငွေထုတ်</option>
+                            <option value="transfer">ငွေလွှဲ</option>
+                            <option value="trade">ကုန်သွယ်မှု</option>
+                        </select>
+                        <select id="transactionStatusFilter">
+                            <option value="">အားလုံး</option>
+                            <option value="pending">စောင့်ဆိုင်းနေသည်</option>
+                            <option value="completed">ပြီးမြောက်သည်</option>
+                            <option value="failed">မအောင်မြင်</option>
+                        </select>
+                        <input type="date" id="transactionDateFilter">
+                    </div>
+                </div>
+                
+                <div class="transactions-table-container">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Transaction ID</th>
+                                <th>အမျိုးအစား</th>
+                                <th>ပေးပို့သူ</th>
+                                <th>လက်ခံသူ</th>
+                                <th>ပမာဏ</th>
+                                <th>အခြေအနေ</th>
+                                <th>ရက်စွဲ</th>
+                                <th>လုပ်ဆောင်ချက်များ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactionsTableBody">
+                            <!-- Transactions data will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- KYC Section -->
+            <section id="kycSection" class="admin-section">
+                <div class="section-header">
+                    <h2>KYC အတည်ပြုခြင်း</h2>
+                    <div class="kyc-stats">
+                        <span class="stat">စောင့်ဆိုင်းနေသော: <strong id="pendingKYCCount">0</strong></span>
+                        <span class="stat">အတည်ပြုပြီး: <strong id="approvedKYCCount">0</strong></span>
+                        <span class="stat">ငြင်းပယ်ပြီး: <strong id="rejectedKYCCount">0</strong></span>
+                    </div>
+                </div>
+                
+                <div class="kyc-requests" id="kycRequests">
+                    <!-- KYC requests will be populated here -->
+                </div>
+            </section>
+
+            <!-- Market Section -->
+            <section id="marketSection" class="admin-section">
+                <div class="section-header">
+                    <h2>စျေးကွက်ထိန်းချုပ်မှု</h2>
+                    <button class="update-prices-btn" id="updatePricesBtn">
+                        <i class="fas fa-sync-alt"></i>
+                        စျေးနှုန်းများ အပ်ဒိတ်လုပ်ရန်
+                    </button>
+                </div>
+                
+                <div class="market-controls">
+                    <div class="price-controls">
+                        <h3>စျေးနှုန်း ကိုယ်တိုင်ထိန်းချုပ်ရန်</h3>
+                        <div class="price-form">
+                            <select id="coinSelect">
+                                <option value="BTC">Bitcoin (BTC)</option>
+                                <option value="ETH">Ethereum (ETH)</option>
+                                <option value="BNB">Binance Coin (BNB)</option>
+                                <option value="ADA">Cardano (ADA)</option>
+                                <option value="SOL">Solana (SOL)</option>
+                            </select>
+                            <input type="number" id="newPrice" placeholder="စျေးနှုန်းအသစ် (USD)" step="0.01">
+                            <button id="updatePriceBtn">အပ်ဒိတ်လုပ်ရန်</button>
+                        </div>
+                    </div>
+                    
+                    <div class="market-data-table">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Cryptocurrency</th>
+                                    <th>လက်ရှိစျေးနှုန်း (USD)</th>
+                                    <th>24h ပြောင်းလဲမှု</th>
+                                    <th>ကုန်သွယ်မှုပမာဏ</th>
+                                    <th>နောက်ဆုံးအပ်ဒိတ်</th>
+                                </tr>
+                            </thead>
+                            <tbody id="marketDataTableBody">
+                                <!-- Market data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Logs Section -->
+            <section id="logsSection" class="admin-section">
+                <div class="section-header">
+                    <h2>လုပ်ဆောင်ချက်မှတ်တမ်း</h2>
+                    <div class="log-filters">
+                        <input type="date" id="logDateFilter">
+                        <select id="logActionFilter">
+                            <option value="">အားလုံး</option>
+                            <option value="user_approved">အသုံးပြုသူ အတည်ပြုခြင်း</option>
+                            <option value="kyc_approved">KYC အတည်ပြုခြင်း</option>
+                            <option value="kyc_rejected">KYC ငြင်းပယ်ခြင်း</option>
+                            <option value="price_updated">စျေးနှုန်း အပ်ဒိတ်</option>
+                            <option value="transaction_approved">ငွေလွှဲ အတည်ပြုခြင်း</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="logs-container">
+                    <div id="adminLogs" class="logs-list">
+                        <!-- Admin logs will be populated here -->
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- User Detail Modal -->
+    <div id="userDetailModal" class="modal">
+        <div class="modal-content large">
+            <span class="close">&times;</span>
+            <div class="user-detail-container">
+                <div class="user-detail-header">
+                    <h3>အသုံးပြုသူ အသေးစိတ်</h3>
+                </div>
+                <div id="userDetailContent">
+                    <!-- User details will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Wallet Management Modal -->
+    <div id="walletManagementModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div class="wallet-management-container">
+                <h3>ပိုက်ဆံအိတ် စီမံခန့်ခွဲမှု</h3>
+                <form id="walletManagementForm">
+                    <input type="hidden" id="targetUserId">
+                    <div class="input-group">
+                        <label>ငွေကြေးအမျိုးအစား</label>
+                        <select id="walletCurrency" required>
+                            <option value="BTC">Bitcoin (BTC)</option>
+                            <option value="ETH">Ethereum (ETH)</option>
+                            <option value="BNB">Binance Coin (BNB)</option>
+                            <option value="ADA">Cardano (ADA)</option>
+                            <option value="SOL">Solana (SOL)</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>လုပ်ဆောင်ချက်</label>
+                        <select id="walletAction" required>
+                            <option value="add">ငွေသွင်းရန်</option>
+                            <option value="subtract">ငွေထုတ်ရန်</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>ပမာဏ</label>
+                        <input type="number" id="walletAmount" step="0.00000001" required>
+                    </div>
+                    <div class="input-group">
+                        <label>မှတ်ချက်</label>
+                        <textarea id="walletNote" placeholder="လုပ်ဆောင်ချက်အတွက် မှတ်ချက်"></textarea>
+                    </div>
+                    <button type="submit" class="admin-btn">လုပ်ဆောင်ရန်</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="admin-script.js"></script>
+</body>
+</html>
